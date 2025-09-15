@@ -1,7 +1,7 @@
 [build]
   base = "frontend"
   command = "next build --turbopack --no-lint"
-  publish = "frontend/.next"
+  publish = ".next"
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
