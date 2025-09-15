@@ -25,7 +25,7 @@ export default function Home() {
   // Fetch portfolio data from backend
   const fetchData = async () => {
     try {
-      const res = await axios.get("/api/portfolio");
+      const res = await axios.get("https://stock-portfolio-service-71f7.onrender.com/portfolio");
       setStocks(res.data.consolidatedList);
     } catch (err) {
       console.error("Error fetching portfolio:", err);
