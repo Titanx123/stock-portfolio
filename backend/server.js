@@ -4,19 +4,30 @@ import XLSX from 'xlsx';
 import yahooFinance from 'yahoo-finance2';
 import axios from 'axios';
 import puppeteer from 'puppeteer';
+import path from 'path';
+import {fileURLToPath} from 'url'
+
+// For ES modules __dirname equivalent
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 
 const app = express();
 app.use(cors());
 
-
+const PORT = process.env.PORT || 4000;
+const excelFilePath = path.join(__dirname, '54D44E6F.xlsx');
+console.log(excelFilePath)
 //reading the data from excel
-const workbook = XLSX.readFile('54D44E6F.xlsx');
+let stocks = [];
+
+try {
+    const workbook = XLSX.readFile(excelFilePath);
 const sheet = workbook.Sheets[workbook.SheetNames[0]];
 const portFolioData = XLSX.utils.sheet_to_json(sheet);
 
 
 let currentSector = null;
-let stocks = [];
 portFolioData.forEach((row,index) => {
     const name = row.__EMPTY_1;
 
@@ -33,8 +44,14 @@ portFolioData.forEach((row,index) => {
             sector: currentSector,
             investment: row.__EMPTY_2 * row.__EMPTY_3
         });
-    }
-});
+     }
+    });
+    console.log(">>>stocks",stocks.length)
+} catch (error) {
+    console.error('Error reading Excel file:', error.message);
+    console.log('Server will continue with empty stocks array');
+}
+
 
 //finance url based on ticker
 function getGoogleFinanceUrl(ticker) {
@@ -201,6 +218,18 @@ app.get('/portfolio', async (req, res) => {
 //   })();
 // console.log(stocks);
 
-app.listen(4000, () =>
-    console.log("Server running at http://localhost:4000/portfolio")
-  );
+// Error handling middleware
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).json({ error: 'Something went wrong!' });
+});
+
+// Handle 404 routes
+app.use((req, res) => {
+    res.status(404).json({ error: 'Route not found' });
+});
+
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Server running on port ${PORT}`);
+    console.log(`Portfolio API: http://localhost:${PORT}/portfolio`);
+});
